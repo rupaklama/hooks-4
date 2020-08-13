@@ -1,10 +1,11 @@
 import React from 'react';
-import { BrowserRouter as Router, Link, NavLink } from 'react-router-dom';
+import {Link, NavLink } from 'react-router-dom';
+
 
 function Header() {
   return (
     <nav className="navbar navbar-light">
-      <Router>
+      
         <div className="container">
           <Link to="/" className="navbar-brand">
             Nepal World Wide
@@ -28,7 +29,7 @@ function Header() {
             </li>
           </ul>
         </div>
-      </Router>
+      
     </nav>
   );
 }
