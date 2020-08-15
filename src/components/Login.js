@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+
+import useFetch from '../hooks/useFetch';
+
 function Login(props) {
   // default props by react Router - history, location & match objects
   // console.log(props);
@@ -28,52 +30,33 @@ function Login(props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // to display error message
-  const [error, setError] = useState(null);
+  // implementing our custom useFetch hook
+  // data is object with three props -
+  // response: null or object from backend, error: null or error object, loading:true/false
+  // doFetch - func from custom hook, call it whenever we need
+  const [{ loading, response, error }, doFetch] = useFetch('login/');
+
+  console.log('useFetch', loading, error, response);
 
   // not submitting post request in the begining/initial render
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // basically not submitting anything in the beginning
+  // const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchData = async () => {
-    // error handling
-    try {
-      // if we are logging in, we need only email & password, otherwise
-      const user = isLogin ? {email, password} : {email, password, username}
-
-      await axios.post(`http://localhost:8000/rest-auth/${authApiUrl}`, {
-        // objects object with query params
-        body: {
-          user
-        },
-      });
-    } catch (error) {
-      setError(error);
-    }
-
-    // after fetching data, set to default
-    setIsSubmitting(false);
-  };
+  // if we are logging in, we need only email & password, otherwise
+  const user = isLogin ? { email, password } : { email, password, username };
 
   const handleSubmit = event => {
     event.preventDefault();
-    // on form submit, making post request
-    setIsSubmitting(true);
-    fetchData();
 
-    setEmail('');
-    setPassword('');
+    // doFetch func from custom hook to make api call, takes object params
+    doFetch({
+      method: 'post',
+      data: {
+        username: username,
+        password: password,
+      },
+    });
   };
-
-  useEffect(() => {
-    // on form submit or
-    // on true, do nothing in our effect & just return fetch data
-    if (!isSubmitting) {
-      return;
-    }
-
-    fetchData();
-    // eslint-disable-next-line
-  }, []);
 
   return (
     <div className="auth-page">
@@ -88,23 +71,25 @@ function Login(props) {
             <form onSubmit={handleSubmit}>
               <fieldset>
                 {/* Displaying this fieldset only when we are on /register page */}
-                {!isLogin && <fieldset className="form-group">
+                {!isLogin && (
+                  <fieldset className="form-group">
+                    <input
+                      type="email"
+                      className="form-control form-control-lg"
+                      placeholder="Email"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                    />
+                  </fieldset>
+                )}
+
+                <fieldset className="form-group">
                   <input
                     type="text"
                     className="form-control form-control-lg"
                     placeholder="Username"
                     value={username}
                     onChange={e => setUsername(e.target.value)}
-                  />
-                </fieldset>}
-
-                <fieldset className="form-group">
-                  <input
-                    type="email"
-                    className="form-control form-control-lg"
-                    placeholder="Email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
                   />
                 </fieldset>
               </fieldset>
@@ -121,16 +106,17 @@ function Login(props) {
                 </fieldset>
 
                 <button
-                  disabled={isSubmitting}
+                  disabled={loading}
                   className="btn btn-lg btn-primary pull-xs-right"
                   type="submit"
                 >
                   {pageTitle}
                 </button>
               </fieldset>
-
-              {error && <div>{error.message}</div>}
             </form>
+
+            {loading && <p>Loading...</p>}
+            {error && <p>Something went wrong...</p>}
           </div>
         </div>
       </div>
