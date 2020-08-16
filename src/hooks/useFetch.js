@@ -21,6 +21,9 @@ export default url => {
   // base url
   const baseUrl = 'http://127.0.0.1:8000/rest-auth/';
 
+  // options object / initialValue is basically always not there,
+  // will set default value to empty object, pass it on to axios
+  // when making post request with this func, the empty object gets override with post data
   const doFetch = (initialValue = {}) => {
     setInitialValue(initialValue)
     // the best place to setLoading is inside doFetch func
@@ -31,7 +34,6 @@ export default url => {
 
   useEffect(() => {
     // if false don't return anything 
-    // this if condition won't pass because it's value is false now
     if (!loading) {
       return;
     }
@@ -42,6 +44,7 @@ export default url => {
 
     axios(baseUrl + url, initialValue)
     .then( res => {
+      // token data
       setResponse(res.data)
       // false is when finished fetching
       setLoading(false)
@@ -51,7 +54,11 @@ export default url => {
       setLoading(false)
     })
     // eslint-disable-next-line
-  }, [loading]); 
+    // creating local variables inside useEffect can solve this exhaustive-deps errors,
+    // but if we are using some variables from components or hooks from outside to inside useEffect 
+    // then, we will get this hook errors/exhaustive-deps errors
+    // Basically to fix this error, just add - url & initival value object 
+  }, [loading, url, initialValue]); 
   // here loading value changes to True after executing doFetch func above,
   // our useEffect gets executed/rendered since we updated our loading value
 

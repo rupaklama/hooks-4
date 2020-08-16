@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, Redirect } from 'react-router-dom';
 
 import useFetch from '../hooks/useFetch';
-
+import useLocalStorage from '../hooks/useLocalStorage'; 
 function Login(props) {
   // default props by react Router - history, location & match objects
   // console.log(props);
@@ -17,46 +17,95 @@ function Login(props) {
   // if we are on /login page, text should be 'Sign in' if not text should be 'Sing up'
   const pageTitle = isLogin ? 'Sign in' : 'Sign up';
 
-  // if we are on login page, redirect url to create account is register or vice versa
+  // redirect user to /register to create an account, /login to sign in 
   const descriptionLink = isLogin ? '/register' : '/login';
 
   // if we are on login page, text will be 'Need an account', if not
   const descriptionText = isLogin ? 'Need an account' : 'Have an account?';
 
   // login or register api url
-  const authApiUrl = isLogin ? 'login' : 'registration';
+  const authApiUrl = isLogin ? 'login/' : 'registration/';
 
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [password1, setPassword1] = useState('');
+  const [password2, setPassword2] = useState('');
+
+  // re-directing user to home page after successfully set localStorage
+  const [local_storage, setLocalStorage] = useState(false);
 
   // implementing our custom useFetch hook
   // data is object with three props -
   // response: null or object from backend, error: null or error object, loading:true/false
   // doFetch - func from custom hook, call it whenever we need
-  const [{ loading, response, error }, doFetch] = useFetch('login/');
+  const [{ loading, response, error }, doFetch] = useFetch(authApiUrl);
 
-  console.log('useFetch', loading, error, response);
+  // console.log('useFetch', loading, error, response);
+
+  // implementing our custom useLocalStorage hook
+  const [ setToken ] = useLocalStorage('token');
+  // console.log('token', token)
 
   // not submitting post request in the begining/initial render
   // basically not submitting anything in the beginning
   // const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // if we are logging in, we need only email & password, otherwise
-  const user = isLogin ? { email, password } : { email, password, username };
-
   const handleSubmit = event => {
     event.preventDefault();
 
+    // if we are logging in, we need only need email & password1, otherwise
+    // const user = isLogin ? { username, password1 } : { email, username, password1, password2 };
+    
+    // doFetch func gets call with our initial value
     // doFetch func from custom hook to make api call, takes object params
+    // this is our post data object that overrides initialValue in useFetch &
+    // gets saved in that useState
     doFetch({
       method: 'post',
-      data: {
+      data: isLogin ? { 
         username: username,
-        password: password,
-      },
+        password: password1
+      } :
+      { 
+        username: username, 
+        email: email,
+        password1: password1, 
+        password2: password2 
+      }
     });
+
+    setUsername('')
+    setPassword1('')
+    setPassword2('')
   };
+
+  // using useEffect since saving token is a side effect
+  // saving token in browser localStorage
+  useEffect(() => {
+    // execute this useEffect only when response is not null,
+    // meaning when we have response object
+    if (!response) {
+      return; // don't do anything until response is there
+    }
+    // if we have response object, save it
+    const token = response.key;
+    setToken(token)
+    // localStorage.setItem('token', token);
+
+    // re-directing user to home page after successfully set localStorage
+    setLocalStorage(true)
+
+     // executing userEffect only when our response object changes, not on every render
+  }, [response, setToken]);
+    // FUNCTION also needs to pass into dependency array, not only variables
+
+  // history.push('/') - not best approach
+  // using react router - redirect prop, more declarative approach
+  // re-directing user to home page after successfully set localStorage
+  if (local_storage) {
+    // using react router's Redirect component
+    return <Redirect to="/" />
+  }
 
   return (
     <div className="auth-page">
@@ -70,7 +119,7 @@ function Login(props) {
 
             <form onSubmit={handleSubmit}>
               <fieldset>
-                {/* Displaying this fieldset only when we are on /register page */}
+                {/* Displaying this fieldsets only when we are on /register page */}
                 {!isLogin && (
                   <fieldset className="form-group">
                     <input
@@ -79,6 +128,15 @@ function Login(props) {
                       placeholder="Email"
                       value={email}
                       onChange={e => setEmail(e.target.value)}
+                    />
+
+                    <br />
+                    <input
+                      type="password"
+                      className="form-control form-control-lg"
+                      placeholder="Password"
+                      value={password2}
+                      onChange={e => setPassword2(e.target.value)}
                     />
                   </fieldset>
                 )}
@@ -92,16 +150,14 @@ function Login(props) {
                     onChange={e => setUsername(e.target.value)}
                   />
                 </fieldset>
-              </fieldset>
 
-              <fieldset>
                 <fieldset className="form-group">
                   <input
                     type="password"
                     className="form-control form-control-lg"
-                    placeholder="password"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
+                    placeholder="Password"
+                    value={password1}
+                    onChange={e => setPassword1(e.target.value)}
                   />
                 </fieldset>
 
