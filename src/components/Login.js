@@ -1,8 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link, Redirect } from 'react-router-dom';
 
 import useFetch from '../hooks/useFetch';
-import useLocalStorage from '../hooks/useLocalStorage'; 
+// import useLocalStorage from '../hooks/useLocalStorage'; 
+
+// import our Context object
+import { CurrentUserContext } from '../context/currentUser';
+
+// import error component
+// import BackendErrorMessages from './BackendErrorMessages';
 function Login(props) {
   // default props by react Router - history, location & match objects
   // console.log(props);
@@ -39,12 +45,16 @@ function Login(props) {
   // response: null or object from backend, error: null or error object, loading:true/false
   // doFetch - func from custom hook, call it whenever we need
   const [{ loading, response, error }, doFetch] = useFetch(authApiUrl);
-
+  // console.log('error', error)
   // console.log('useFetch', loading, error, response);
 
   // implementing our custom useLocalStorage hook
-  const [ setToken ] = useLocalStorage('token');
+  // const [ , setToken ] = useLocalStorage('token');
   // console.log('token', token)
+
+  // use useContext hook to access our context object
+  const [currentUserState, setCurrentUserState] = useContext(CurrentUserContext);
+  console.log('currentUserState', currentUserState)
 
   // not submitting post request in the begining/initial render
   // basically not submitting anything in the beginning
@@ -87,16 +97,26 @@ function Login(props) {
     if (!response) {
       return; // don't do anything until response is there
     }
+    
     // if we have response object, save it
     const token = response.key;
-    setToken(token)
-    // localStorage.setItem('token', token);
-
+    // setToken(token)
+    localStorage.setItem('token', token);
+    
     // re-directing user to home page after successfully set localStorage
     setLocalStorage(true)
 
-     // executing userEffect only when our response object changes, not on every render
-  }, [response, setToken]);
+    // update user state in context object
+    // we can also provide function instead of data
+    setCurrentUserState(state => ({
+      ...state,
+      isLoggedIn: true,
+      isLoading: false,
+      currentUser: token
+    }))
+
+    // executing userEffect only when our response object changes, not on every render
+  }, [response, setCurrentUserState]);
     // FUNCTION also needs to pass into dependency array, not only variables
 
   // history.push('/') - not best approach
@@ -172,7 +192,8 @@ function Login(props) {
             </form>
 
             {loading && <p>Loading...</p>}
-            {error && <p>Something went wrong...</p>}
+            {error && 
+              <p>This password is too short. It must contain at least 8 characters.</p>}
           </div>
         </div>
       </div>

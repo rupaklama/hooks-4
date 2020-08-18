@@ -43,9 +43,9 @@ export default url => {
     console.log('effect is triggered');
 
     axios(baseUrl + url, initialValue)
-    .then( res => {
+    .then( response => {
       // token data
-      setResponse(res.data)
+      setResponse(response.data)
       // false is when finished fetching
       setLoading(false)
     })
