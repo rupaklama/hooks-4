@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Link, Redirect } from 'react-router-dom';
 
+
 import useFetch from '../hooks/useFetch';
-// import useLocalStorage from '../hooks/useLocalStorage'; 
+import useLocalStorage from '../hooks/useLocalStorage'; 
 
 // import our Context object
 import { CurrentUserContext } from '../context/currentUser';
@@ -49,7 +50,7 @@ function Login(props) {
   // console.log('useFetch', loading, error, response);
 
   // implementing our custom useLocalStorage hook
-  // const [ , setToken ] = useLocalStorage('token');
+  const [ , setToken ] = useLocalStorage('token');
   // console.log('token', token)
 
   // use useContext hook to access our context object
@@ -100,8 +101,8 @@ function Login(props) {
     
     // if we have response object, save it
     const token = response.key;
-    // setToken(token)
-    localStorage.setItem('token', token);
+    setToken(token)
+    // localStorage.setItem('token', token);
     
     // re-directing user to home page after successfully set localStorage
     setLocalStorage(true)
@@ -115,8 +116,9 @@ function Login(props) {
       currentUser: token
     }))
 
+    
     // executing userEffect only when our response object changes, not on every render
-  }, [response, setCurrentUserState]);
+  }, [response, setCurrentUserState, doFetch, setToken]);
     // FUNCTION also needs to pass into dependency array, not only variables
 
   // history.push('/') - not best approach

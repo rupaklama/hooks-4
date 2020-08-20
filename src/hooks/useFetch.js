@@ -1,5 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+
+// to use token for authentication
+import useLocalStorage from '../hooks/useLocalStorage';
 
 // declare custom hook - useFetch
 // two params which are two unique things between components
@@ -17,6 +20,10 @@ export default url => {
   
   // initial state value
   const [initialValue, setInitialValue] = useState({});
+  
+  // getting token from browser's local storage
+  // to use token for authentication 
+  const [token] = useLocalStorage('token');
 
   // base url
   const baseUrl = 'http://127.0.0.1:8000/rest-auth/';
@@ -24,25 +31,39 @@ export default url => {
   // options object / initialValue is basically always not there,
   // will set default value to empty object, pass it on to axios
   // when making post request with this func, the empty object gets override with post data
-  const doFetch = (initialValue = {}) => {
+
+  // using useCallback hook to prevent function calling on every render & 
+  // provide emtpy array for second arg to call it once or useCallback won't work
+  const doFetch = useCallback((initialValue = {}) => {
     setInitialValue(initialValue)
     // the best place to setLoading is inside doFetch func
     // on calling this func from other component, starts the fetch process
     // when True, trigger our effect & start fetching api data
     setLoading(true);
-  }
+  }, [])
 
   useEffect(() => {
     // if false don't return anything 
     if (!loading) {
       return;
     }
+
+    // updating our new initialValue with new object  - token with headers object
+    const tokenAuth = {
+      ...initialValue,
+      ...{
+        headers: {
+          authorization: token ? `token ${token}` : ''
+        }
+      }
+    }
     
     // now, loading value is true, axios gets call
     // After above, our axios call gets executed
-    console.log('effect is triggered');
+    // console.log('effect is triggered');
 
-    axios(baseUrl + url, initialValue)
+    // making fetch request with or without token
+    axios(baseUrl + url, tokenAuth)
     .then( response => {
       // token data
       setResponse(response.data)
@@ -58,7 +79,7 @@ export default url => {
     // but if we are using some variables from components or hooks from outside to inside useEffect 
     // then, we will get this hook errors/exhaustive-deps errors
     // Basically to fix this error, just add - url & initival value object 
-  }, [loading, url, initialValue]); 
+  }, [loading, url, initialValue, token]); 
   // here loading value changes to True after executing doFetch func above,
   // our useEffect gets executed/rendered since we updated our loading value
 

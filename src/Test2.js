@@ -1,4 +1,4 @@
-import React, { useState, useReducer } from 'react';
+import React, { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 // How to manage React State with Arrays or
 // How to manage arrays in React state

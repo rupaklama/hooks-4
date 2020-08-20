@@ -57,6 +57,7 @@ export default function Test() {
     // const newList = list.concat({ name, id: uuidv4() });
     
     // to dispatch an action to reducer & update our state object
+    // type & payload
     dispatch({ type: 'ADD_ITEM', name, id: uuidv4() })
 
     setName('')
