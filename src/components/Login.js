@@ -31,7 +31,7 @@ function Login(props) {
   const descriptionText = isLogin ? 'Need an account' : 'Have an account?';
 
   // login or register api url
-  const authApiUrl = isLogin ? 'login/' : 'registration/';
+  const authApiUrl = isLogin ? '/rest-auth/login/' : '/rest-auth/registration/';
 
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -54,8 +54,8 @@ function Login(props) {
   // console.log('token', token)
 
   // use useContext hook to access our context object
-  const [currentUserState, setCurrentUserState] = useContext(CurrentUserContext);
-  console.log('currentUserState', currentUserState)
+  const [, dispatch] = useContext(CurrentUserContext);
+ 
 
   // not submitting post request in the begining/initial render
   // basically not submitting anything in the beginning
@@ -107,18 +107,11 @@ function Login(props) {
     // re-directing user to home page after successfully set localStorage
     setLocalStorage(true)
 
-    // update user state in context object
-    // we can also provide function instead of data
-    setCurrentUserState(state => ({
-      ...state,
-      isLoggedIn: true,
-      isLoading: false,
-      currentUser: token
-    }))
+    dispatch({ type: 'SET_AUTHORIZED', payload: response.key })
 
-    
+   
     // executing userEffect only when our response object changes, not on every render
-  }, [response, setCurrentUserState, doFetch, setToken]);
+  }, [response, doFetch, setToken, dispatch]);
     // FUNCTION also needs to pass into dependency array, not only variables
 
   // history.push('/') - not best approach

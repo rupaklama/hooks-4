@@ -5,11 +5,10 @@ import axios from 'axios';
 import useLocalStorage from '../hooks/useLocalStorage';
 
 // declare custom hook - useFetch
-// two params which are two unique things between components
-// url is unique & useState's initialValue
+
 export default url => {
   // Loading is Load data from the server and place the returned data to our components
-  // We want to display a loader in the main component when fetching is occurring.
+
   // As we did with error handling, let’s add a loading state.
   // True when start fetching api data, false when finished fetching
   const [loading, setLoading] = useState(false);
@@ -26,7 +25,7 @@ export default url => {
   const [token] = useLocalStorage('token');
 
   // base url
-  const baseUrl = 'http://127.0.0.1:8000/rest-auth/';
+  const baseUrl = 'http://127.0.0.1:8000';
 
   // options object / initialValue is basically always not there,
   // will set default value to empty object, pass it on to axios
@@ -71,7 +70,7 @@ export default url => {
       setLoading(false)
     })
     .catch(error => {
-      setError(error.response.data)
+      setError(error)
       setLoading(false)
     })
     // eslint-disable-next-line

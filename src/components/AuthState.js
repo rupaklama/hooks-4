@@ -19,10 +19,9 @@ import useLocalStorage from '../hooks/useLocalStorage';
 // we get sign in automatically with our auth token
 export default function AuthState({children}) {
   // response is user data & to fetch func to get current user state
-  const [ {response}, doFetch ] = useFetch('user/');
+  const [ {response}, doFetch ] = useFetch('/rest-auth/user/');
 
-  // user context object
-  const [ , setCurrentUserState] = useContext(CurrentUserContext);
+  const [ , dispatch] = useContext(CurrentUserContext);
 
   const [token] = useLocalStorage('token');
   
@@ -30,21 +29,14 @@ export default function AuthState({children}) {
   useEffect(() => {
     // when no token, update user state & return nothing
     if (!token) {
-      setCurrentUserState(currentUserState => ({
-        ...currentUserState,
-        isLoggedIn: false
-      }))
+      dispatch({ type: 'SET_UNAUTHORIZED'})
       return;
     }
     // calling doFetch to get user data & updating user context object
     doFetch()
-    setCurrentUserState(currentUserState => ({
-      ...currentUserState,
-      // isLoading - loading current user to other components,
-      // other components should wait until we get data from user context object
-      isLoading: true
-    }))
-  }, [doFetch, setCurrentUserState, token])
+    dispatch({ type: 'LOADING'})
+  }, [doFetch, token, dispatch])
+
   // NOTE: our custom function gets call on every render if it's inside dependancy array &
   // react don't have any control over it
   // Solution: to apply useCallback hook into the calling func
@@ -57,14 +49,8 @@ export default function AuthState({children}) {
       return;
     }
 
-    // if we have response object, set current user state
-    setCurrentUserState(currentUserState  => ({
-      ...currentUserState,
-      isLoggedIn: true,
-      isLoading: false,
-      currentUser: token
-    }))
-  }, [response, setCurrentUserState, token]);
+    dispatch({ type: 'SET_AUTHORIZED', payload: response.key })
+  }, [response, dispatch, token]);
 
   return children
 }

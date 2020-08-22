@@ -7,7 +7,7 @@ export default (key, initialValue = '') => {
   // state for ur hook
   // On useState's initial value, we can define a function as well
   // as a first arg which will be called Lazy initial state.
-  // Normally, we will us function inside, when we have some expensive
+  // Normally, we will use function inside, when we have some expensive
   // calculations our initial state
   const [value, setValue] = useState(() => {
     // Lazy initial state

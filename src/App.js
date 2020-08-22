@@ -19,19 +19,19 @@ function App() {
     // header component will be displayed in all the components
     <div className="container">
       <CurrentUserProvider>
-        <AuthState>
-          <Router>
-            <div>
+        <Router>
+          <div>
+            <AuthState>
               <Header />
               <Switch>
                 <Route exact path="/" component={GlobalFeed} />
-                <Route path="/articles/:slug" component={Article} />
+                <Route path="/articles" component={Article} />
                 <Route path="/login" component={Login} />
                 <Route path="/register" component={Login} />
               </Switch>
-            </div>
-          </Router>
-        </AuthState>
+            </AuthState>
+          </div>
+        </Router>
       </CurrentUserProvider>
     </div>
   );
